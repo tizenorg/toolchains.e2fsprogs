@@ -1,0 +1,5 @@
+#!/bin/sh
+
+mv /sbin/resize2fs.static /sbin/resize2fs
+mv /sbin/e2fsck.static /sbin/e2fsck
+mv /sbin/mke2fs.static /sbin/mkfs.ext4
