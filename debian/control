@@ -1,0 +1,24 @@
+Source: e2fsprogs
+Section: admin
+Priority: required
+Maintainer: Hakgoo Lee <goodguy.lee@samsung.com> Wonil Choi <wonil22.choi@samsung.com> Theodore Y. Ts'o <tytso@mit.edu>
+Uploaders: Wonil Choi <wonil22.choi@samsung.com> Yeongil Jang <yg0577.jang@samsung.com>
+Build-Depends: texi2html (>= 1.76), gettext, texinfo, pkg-config, debhelper (>= 5)
+Standards-Version: 3.7.2
+Homepage: http://e2fsprogs.sourceforge.net
+
+Package: e2fsck-static
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: sash | bash-static | zsh-static | busybox-static | zsh30-static
+Architecture: any
+Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
+ This may be of some help to you if your filesystem gets corrupted enough
+ to break the shared libraries used by the dynamically linked checker.
+ .
+ This binary takes much more space than its dynamic counterpart located
+ in e2fsprogs, though.
+ .
+ You may want to install a statically-linked shell as well, to be able
+ to run this program if something like your C library gets corrupted.
+
