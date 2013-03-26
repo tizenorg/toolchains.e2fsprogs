@@ -6,7 +6,7 @@
 %define	_root_libdir	/%{_lib}
 
 Name:           e2fsprogs
-Version:        1.41.11
+Version:        1.41.9
 Release:        2
 # License tags based on COPYING file distinctions for various components
 License:        GPLv2
@@ -14,7 +14,6 @@ Summary:        Utilities for managing ext2, ext3, and ext4 filesystems
 Group:          System/Base
 Source0:        http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
 Source1:        ext2_types-wrapper.h
-Source1001: packaging/e2fsprogs.manifest 
 Patch2:         e2fsprogs-1.40.4-sb_feature_check_ignore.patch
 Patch3:         meego-time-check-preen-ok.patch
 
@@ -130,10 +129,8 @@ It was originally inspired by the Multics SubSystem library.
 %patch3 -p1
 
 %build
-cp %{SOURCE1001} .
 %configure --enable-elf-shlibs --enable-nls --disable-e2initrd-helper --disable-libblkid --disable-uuidd --disable-libuuid
-#make %{?_smp_mflags} V=1
-make  V=1
+make %{?_smp_mflags} V=1
 
 %install
 export PATH=/sbin:$PATH
@@ -154,7 +151,7 @@ install -p -m 644 %{SOURCE1} %{buildroot}%{_includedir}/ext2fs/ext2_types.h
 chmod -R u+w %{buildroot}/*
 
 %check
-%ifnarch %{arm} %{ix86}
+%ifnarch %{arm}
 make check
 %endif
 
@@ -176,7 +173,6 @@ rm -rf %{buildroot}
 
 
 %files
-%manifest e2fsprogs.manifest
 %defattr(-,root,root,-)
 %doc README
 
@@ -210,13 +206,11 @@ rm -rf %{buildroot}
 %{_bindir}/lsattr
 
 %files libs
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
 %{_root_libdir}/libe2p.so.*
 %{_root_libdir}/libext2fs.so.*
 
 %files devel
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
 %{_libdir}/libe2p.a
 %{_libdir}/libe2p.so
@@ -229,12 +223,10 @@ rm -rf %{buildroot}
 %{_includedir}/ext2fs
 
 %files -n libcom_err
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
 %{_root_libdir}/libcom_err.so.*
 
 %files -n libcom_err-devel
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
 %{_bindir}/compile_et
 %{_libdir}/libcom_err.a
@@ -244,12 +236,10 @@ rm -rf %{buildroot}
 %{_libdir}/pkgconfig/com_err.pc
 
 %files -n libss
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
 %{_root_libdir}/libss.so.*
 
 %files -n libss-devel
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
 %{_bindir}/mk_cmds
 %{_libdir}/libss.a
