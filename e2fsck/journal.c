@@ -853,7 +853,6 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 {
 	io_manager io_ptr = ctx->fs->io->manager;
 	int blocksize = ctx->fs->blocksize;
-	int fs_error = 0;
 	errcode_t	retval, recover_retval;
 	io_stats	stats = 0;
 	unsigned long long kbytes_written = 0;
@@ -869,8 +868,6 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 		ext2fs_flush(ctx->fs);	/* Force out any modifications */
 
 	recover_retval = recover_ext3_journal(ctx);
-	if (ctx->fs->super->s_state | EXT2_ERROR_FS)
-		fs_error = 1;
 
 	/*
 	 * Reload the filesystem context to get up-to-date data from disk
@@ -895,8 +892,6 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 	ctx->fs->now = ctx->now;
 	ctx->fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 	ctx->fs->super->s_kbytes_written += kbytes_written;
-	if (fs_error)
-		ctx->fs->super->s_state |= EXT2_ERROR_FS;
 
 	/* Set the superblock flags */
 	e2fsck_clear_recover(ctx, recover_retval);

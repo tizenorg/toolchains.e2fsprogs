@@ -47,10 +47,8 @@ extern int optind;
 #endif
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <libgen.h>
 #include <limits.h>
-#include <blkid/blkid.h>
 
 #include "ext2fs/ext2_fs.h"
 #include "et/com_err.h"
@@ -80,7 +78,6 @@ int	cflag;
 int	verbose;
 int	quiet;
 int	super_only;
-int	discard = 1;
 int	force;
 int	noaction;
 int	journal_size;
@@ -113,7 +110,7 @@ static void usage(void)
 	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
 	"[-r fs-revision] [-E extended-option[,...]]\n"
-	"\t[-T fs-type] [-U UUID] [-jnqvFKSV] device [blocks-count]\n"),
+	"\t[-T fs-type] [-U UUID] [-jnqvFSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
@@ -617,8 +614,6 @@ static void show_stats(ext2_filsys fs)
 		s->s_log_block_size);
 	printf(_("Fragment size=%u (log=%u)\n"), fs->fragsize,
 		s->s_log_frag_size);
-	printf(_("Stride=%u blocks, Stripe width=%u blocks\n"),
-	       s->s_raid_stride, s->s_raid_stripe_width);
 	printf(_("%u inodes, %u blocks\n"), s->s_inodes_count,
 	       s->s_blocks_count);
 	printf(_("%u blocks (%2.2f%%) reserved for the super user\n"),
@@ -1078,48 +1073,6 @@ static int get_bool_from_profile(char **fs_types, const char *opt, int def_val)
 extern const char *mke2fs_default_profile;
 static const char *default_files[] = { "<default>", 0 };
 
-#ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
-/*
- * Sets the geometry of a device (stripe/stride), and returns the
- * device's alignment offset, if any, or a negative error.
- */
-static int ext2fs_get_device_geometry(const char *file,
-				      struct ext2_super_block *fs_param)
-{
-	int rc = -1;
-	int blocksize;
-	blkid_probe pr;
-	blkid_topology tp;
-	unsigned long min_io;
-	unsigned long opt_io;
-	struct stat statbuf;
-
-	/* Nothing to do for a regular file */
-	if (!stat(file, &statbuf) && S_ISREG(statbuf.st_mode))
-		return 0;
-
-	pr = blkid_new_probe_from_filename(file);
-	if (!pr)
-		goto out;
-
-	tp = blkid_probe_get_topology(pr);
-	if (!tp)
-		goto out;
-
-	min_io = blkid_topology_get_minimum_io_size(tp);
-	opt_io = blkid_topology_get_optimal_io_size(tp);
-	blocksize = EXT2_BLOCK_SIZE(fs_param);
-
-	fs_param->s_raid_stride = min_io / blocksize;
-	fs_param->s_raid_stripe_width = opt_io / blocksize;
-
-	rc = blkid_topology_get_alignment_offset(tp);
-out:
-	blkid_free_probe(pr);
-	return rc;
-}
-#endif
-
 static void PRS(int argc, char *argv[])
 {
 	int		b, c;
@@ -1213,7 +1166,7 @@ static void PRS(int argc, char *argv[])
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cf:g:G:i:jl:m:no:qr:s:t:vE:FI:J:KL:M:N:O:R:ST:U:V")) != EOF) {
+		    "b:cf:g:G:i:jl:m:no:qr:s:t:vE:FI:J:L:M:N:O:R:ST:U:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = strtol(optarg, &tmp, 0);
@@ -1291,9 +1244,6 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'J':
 			parse_journal_opts(optarg);
-			break;
-		case 'K':
-			discard = 0;
 			break;
 		case 'j':
 			if (!journal_size)
@@ -1683,20 +1633,6 @@ got_size:
 	fs_param.s_log_frag_size = fs_param.s_log_block_size =
 		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 
-#ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
-	retval = ext2fs_get_device_geometry(device_name, &fs_param);
-	if (retval < 0) {
-		fprintf(stderr,
-			_("warning: Unable to get device geometry for %s\n"),
-			device_name);
-	} else if (retval) {
-		printf(_("%s alignment is offset by %lu bytes.\n"),
-		       device_name, retval);
-		printf(_("This may result in very poor performance, "
-			  "(re)-partitioning suggested.\n"));
-	}
-#endif
-
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
 
 	lazy_itable_init = get_bool_from_profile(fs_types,
@@ -1915,48 +1851,6 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	return retval;
 }
 
-#ifdef __linux__
-
-#ifndef BLKDISCARD
-#define BLKDISCARD	_IO(0x12,119)
-#endif
-
-static void mke2fs_discard_blocks(ext2_filsys fs)
-{
-	int fd;
-	int ret;
-	int blocksize;
-	__u64 blocks;
-	__uint64_t range[2];
-
-	blocks = fs->super->s_blocks_count;
-	blocksize = EXT2_BLOCK_SIZE(fs->super);
-	range[0] = 0;
-	range[1] = blocks * blocksize;
-
-	fd = open64(fs->device_name, O_RDWR);
-
-	/*
-	 * We don't care about whether the ioctl succeeds; it's only an
-	 * optmization for SSDs or sparse storage.
-	 */
-	if (fd > 0) {
-		ret = ioctl(fd, BLKDISCARD, &range);
-		if (verbose) {
-			printf(_("Calling BLKDISCARD from %llu to %llu "),
-				range[0], range[1]);
-			if (ret)
-				printf(_("failed.\n"));
-			else
-				printf(_("succeeded.\n"));
-		}
-		close(fd);
-	}
-}
-#else
-#define mke2fs_discard_blocks(fs)
-#endif
-
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -2000,11 +1894,6 @@ int main (int argc, char *argv[])
 		com_err(device_name, retval, _("while setting up superblock"));
 		exit(1);
 	}
-
-	/* Can't undo discard ... */
-	if (discard && (io_ptr != undo_io_manager))
-		mke2fs_discard_blocks(fs);
-
 	sprintf(tdb_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
 		32768 : fs->blocksize * 8);
 	io_channel_set_options(fs->io, tdb_string);
