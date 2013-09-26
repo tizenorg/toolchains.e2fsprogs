@@ -150,6 +150,9 @@ install -p -m 644 %{SOURCE1} %{buildroot}%{_includedir}/ext2fs/ext2_types.h
 
 chmod -R u+w %{buildroot}/*
 
+mkdir -p %{buildroot}/usr/share/license
+cp COPYING %{buildroot}/usr/share/license/%{name}
+
 %check
 %ifnarch %{arm}
 make check
@@ -175,6 +178,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %doc README
+/usr/share/license/%{name}
 
 %config(noreplace) %{_sysconfdir}/mke2fs.conf
 %{_root_sbindir}/badblocks
