@@ -158,11 +158,6 @@ cat COPYING > %{buildroot}%{_datadir}/license/libss
 
 chmod -R u+w %{buildroot}/*
 
-%check
-%ifnarch %{arm}
-make check
-%endif
-
 %clean
 rm -rf %{buildroot}
 
