@@ -15,7 +15,7 @@ extern int	 journal_flags;
 extern char	*journal_device;
 
 #ifndef HAVE_STRCASECMP
-extern int strcasecmp (const char *s1, const char *s2);
+extern int strcasecmp (char *s1, char *s2);
 #endif
 extern char *get_progname(char *argv_zero);
 extern void proceed_question(void);

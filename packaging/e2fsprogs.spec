@@ -6,7 +6,7 @@
 %define	_root_libdir	/%{_lib}
 
 Name:           e2fsprogs
-Version:        1.41.11
+Version:        1.41.9
 Release:        2
 # License tags based on COPYING file distinctions for various components
 License:        GPLv2
@@ -14,7 +14,7 @@ Summary:        Utilities for managing ext2, ext3, and ext4 filesystems
 Group:          System/Base
 Source0:        http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
 Source1:        ext2_types-wrapper.h
-Source1001: packaging/e2fsprogs.manifest 
+Source1001:     e2fsprogs.manifest
 Patch2:         e2fsprogs-1.40.4-sb_feature_check_ignore.patch
 Patch3:         meego-time-check-preen-ok.patch
 
@@ -132,8 +132,7 @@ It was originally inspired by the Multics SubSystem library.
 %build
 cp %{SOURCE1001} .
 %configure --enable-elf-shlibs --enable-nls --disable-e2initrd-helper --disable-libblkid --disable-uuidd --disable-libuuid
-#make %{?_smp_mflags} V=1
-make  V=1
+make %{?_smp_mflags} V=1
 
 %install
 export PATH=/sbin:$PATH
@@ -149,14 +148,15 @@ mv -f %{buildroot}%{_includedir}/ext2fs/ext2_types.h \
 install -p -m 644 %{SOURCE1} %{buildroot}%{_includedir}/ext2fs/ext2_types.h
 %endif
 
+mkdir -p %{buildroot}%{_datadir}/license
+cat COPYING > %{buildroot}%{_datadir}/license/e2fsprogs
+cat COPYING > %{buildroot}%{_datadir}/license/e2fsprogs-libs
+cat COPYING > %{buildroot}%{_datadir}/license/libcom_err
+cat COPYING > %{buildroot}%{_datadir}/license/libss
+
 %find_lang %{name}
 
 chmod -R u+w %{buildroot}/*
-
-%check
-%ifnarch %{arm} %{ix86}
-make check
-%endif
 
 %clean
 rm -rf %{buildroot}
@@ -176,10 +176,9 @@ rm -rf %{buildroot}
 
 
 %files
-%manifest e2fsprogs.manifest
 %defattr(-,root,root,-)
 %doc README
-
+%{_datadir}/license/e2fsprogs
 %config(noreplace) %{_sysconfdir}/mke2fs.conf
 %{_root_sbindir}/badblocks
 %{_root_sbindir}/debugfs
@@ -201,22 +200,21 @@ rm -rf %{buildroot}
 %{_root_sbindir}/mkfs.ext4dev
 %{_root_sbindir}/resize2fs
 %{_root_sbindir}/tune2fs
-
 %{_sbindir}/filefrag
 %{_sbindir}/mklost+found
 %{_sbindir}/e2freefrag
-
 %{_bindir}/chattr
 %{_bindir}/lsattr
+%manifest e2fsprogs.manifest
 
 %files libs
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
+%{_datadir}/license/e2fsprogs-libs
 %{_root_libdir}/libe2p.so.*
 %{_root_libdir}/libext2fs.so.*
+%manifest e2fsprogs.manifest
 
 %files devel
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
 %{_libdir}/libe2p.a
 %{_libdir}/libe2p.so
@@ -224,17 +222,17 @@ rm -rf %{buildroot}
 %{_libdir}/libext2fs.so
 %{_libdir}/pkgconfig/e2p.pc
 %{_libdir}/pkgconfig/ext2fs.pc
-
 %{_includedir}/e2p
 %{_includedir}/ext2fs
+%manifest e2fsprogs.manifest
 
 %files -n libcom_err
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
+%{_datadir}/license/libcom_err
 %{_root_libdir}/libcom_err.so.*
+%manifest e2fsprogs.manifest
 
 %files -n libcom_err-devel
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
 %{_bindir}/compile_et
 %{_libdir}/libcom_err.a
@@ -242,14 +240,15 @@ rm -rf %{buildroot}
 %{_datadir}/et
 %{_includedir}/et
 %{_libdir}/pkgconfig/com_err.pc
+%manifest e2fsprogs.manifest
 
 %files -n libss
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
+%{_datadir}/license/libss
 %{_root_libdir}/libss.so.*
+%manifest e2fsprogs.manifest
 
 %files -n libss-devel
-%manifest e2fsprogs.manifest
 %defattr(-,root,root)
 %{_bindir}/mk_cmds
 %{_libdir}/libss.a
@@ -257,5 +256,5 @@ rm -rf %{buildroot}
 %{_datadir}/ss
 %{_includedir}/ss
 %{_libdir}/pkgconfig/ss.pc
-
+%manifest e2fsprogs.manifest
 

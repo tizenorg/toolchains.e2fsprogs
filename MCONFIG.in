@@ -50,7 +50,7 @@ CC = @CC@
 BUILD_CC = @BUILD_CC@
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DROOT_SYSCONFDIR=\"$(root_sysconfdir)\" @DEFS@
 CFLAGS = @CFLAGS@
-CPPFLAGS =  -DI_KNOW_THAT_COMPRESSION_IS_EXPERIMENTAL -I$(top_builddir)/lib -I$(top_srcdir)/lib @CPPFLAGS@
+CPPFLAGS =  -I$(top_builddir)/lib -I$(top_srcdir)/lib @CPPFLAGS@
 INTL_FLAGS = @INTL_FLAGS@
 ALL_CFLAGS = $(CPPFLAGS) $(DEFS) $(USE_WFLAGS) $(CFLAGS) $(XTRA_CFLAGS) \
 	$(INTL_FLAGS) $(LINUX_INCLUDE) 
