@@ -9,7 +9,7 @@ Name:           e2fsprogs
 Version:        1.41.9
 Release:        2
 # License tags based on COPYING file distinctions for various components
-License:        GPLv2
+License:        GPL-2.0+ and LGPL-2.1+
 Summary:        Utilities for managing ext2, ext3, and ext4 filesystems
 Group:          System/Base
 Source0:        http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
@@ -39,7 +39,7 @@ You should install the e2fsprogs package if you need to manage the
 performance of an ext2, ext3, or ext4 filesystem.
 
 %package libs
-License:        GPLv2 and LGPLv2
+License:        GPL-2.0+ and LGPL-2.1+
 Summary:        Ext2/3/4 filesystem-specific shared libraries and headers
 Group:          System/Libraries
 Requires(post): /sbin/ldconfig
@@ -52,7 +52,7 @@ These libraries are used to directly acccess ext2/3/4 filesystems
 from userspace.
 
 %package devel
-License:        GPLv2 and LGPLv2
+License:        GPL-2.0+ and LGPL-2.1+
 Summary:        Ext2/3/4 filesystem-specific static libraries and headers
 Group:          Development/Libraries
 Requires:       e2fsprogs-libs = %{version}
@@ -150,9 +150,9 @@ install -p -m 644 %{SOURCE1} %{buildroot}%{_includedir}/ext2fs/ext2_types.h
 
 mkdir -p %{buildroot}%{_datadir}/license
 cat COPYING > %{buildroot}%{_datadir}/license/e2fsprogs
-cat COPYING > %{buildroot}%{_datadir}/license/e2fsprogs-libs
-cat COPYING > %{buildroot}%{_datadir}/license/libcom_err
-cat COPYING > %{buildroot}%{_datadir}/license/libss
+cat COPYING.LIB > %{buildroot}%{_datadir}/license/e2fsprogs-libs
+cat LICENSE.MIT > %{buildroot}%{_datadir}/license/libcom_err
+cat LICENSE.MIT > %{buildroot}%{_datadir}/license/libss
 
 %find_lang %{name}
 
@@ -258,3 +258,22 @@ rm -rf %{buildroot}
 %{_libdir}/pkgconfig/ss.pc
 %manifest e2fsprogs.manifest
 
+%changelog
+* Thu Jul  3 2014 SLP SCM <slpsystem.m@samsung.com> - None 
+- PROJECT: external/e2fsprogs
+- COMMIT_ID: 1cde9e70de6c9bbc24a4e1f1ce0b92168f524d6b
+- BRANCH: master
+- PATCHSET_REVISION: 1cde9e70de6c9bbc24a4e1f1ce0b92168f524d6b
+- CHANGE_OWNER: \"UkJung Kim\" <ujkim@samsung.com>
+- PATCHSET_UPLOADER: \"UkJung Kim\" <ujkim@samsung.com>
+- CHANGE_URL: http://slp-info.sec.samsung.net/gerrit/534204
+- PATCHSET_REVISION: 1cde9e70de6c9bbc24a4e1f1ce0b92168f524d6b
+- TAGGER: SLP SCM <slpsystem.m@samsung.com>
+- Gerrit patchset approval info:
+- UkJung Kim <ujkim@samsung.com> Verified : 1
+- Newton Lee <newton.lee@samsung.com> Code-Review : 1
+- WaLyong Cho <walyong.cho@samsung.com> Code-Review : 1
+- Kyungmin Park <kyungmin.park@samsung.com> Code-Review : 2
+- Kyungmin Park <kyungmin.park@samsung.com> Verified : 1
+- CHANGE_SUBJECT: Merged x86_64 support to master
+- Merged x86_64 support to master
